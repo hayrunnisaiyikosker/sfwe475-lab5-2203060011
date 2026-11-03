@@ -11,3 +11,6 @@ On the Next.js `/tasks` page, I could see the task titles in the HTML source. In
 ### 6. A teammate creates a page at app/Tasks/Project_Plan. Which two URL rules does it break, and what would you rename it to?
 
 It breaks two rules: URLs should use lowercase letters and should not contain underscores. I would rename it to `app/tasks/project-plan/page.tsx`. This creates the URL `/tasks/project-plan`.
+
+## Ethic AI link
+https://claude.ai/share/83868d6a-0f89-4999-89ca-3080eee8cdc2
