@@ -61,3 +61,47 @@ Only `TaskBoard.tsx`. It is the boundary: it uses `useState` and is imported by 
 
 ##  explain why an error file must be a Client Component.
   An error file must be a Client Component because it needs to work in the browser. The "Try again" button uses onClick to call reset(). This needs browser interaction, which Server Components cannot do.
+
+## Your /tasks route may be listed as static even though it fetches data. If it is, explain in two sentences why that would be a problem if the tasks changed every minute. 
+  In my build output, the `/tasks` route is listed as Partial Prerender, not fully static. If the route were fully static and tasks changed every minute, users might see outdated task data because the page would not automatically reflect those changes.
+
+    Route (app)
+    ┌ ○ /
+    ├ ○ /_not-found
+    ├ ◐ /tasks
+    └   /tasks/[id]
+    └ ◐ /tasks/[id]
+
+
+    ○  (Static)             prerendered as static content
+    ◐  (Partial Prerender)  prerendered as static HTML with dynamic server-streamed content
+
+## Choosing the Rendering Strategy
+
+1. **A public page for one shared task: Server Component**
+   - Search engines can see the content.
+   - It does not need much interaction.
+
+2. **A drag-and-drop planning board: Client Component**
+   - Users interact with it a lot.
+   - Drag-and-drop needs JavaScript in the browser.
+
+3. **An About page: Static Generation**
+   - The content does not change often.
+   - It can be created before and served as static HTML.
+
+## what each attribute tells a search engine
+  - `rel="sponsored"` identifies a sponsored or paid link.
+  - `rel="ugc"` identifies a link included in user-generated content.
+
+##  rebuild, and compare the route table with the one you saved. If your version rejects it, search the Next.js docs for “dynamic rendering
+  **Before:** `/tasks` was Static (○). It was created at build time, so the data stayed the same until the next build.
+  **After adding `force-dynamic`:** `/tasks` becomes Dynamic (ƒ). The server creates the page for every request, so the data is always fresh. But this requires more server work each time.
+
+## Stretch 3.7
+  `generateMetadata` runs on the server and can use the route params. First, I used a simple title (`Task ${id} | Task Board`). Then, I used `getTask` to get the real task title. If the ID is invalid or the task does not exist, it uses a default title.
+
+## Challange 3.8
+  For a public page, I would choose the server-rendered `/tasks`. Its task titles are already in the HTML, so search engines can read them without JavaScript. The `/tasks-csr` page first shows only "Loading tasks..." and needs JavaScript to load the content.
+  In my Lighthouse tests, `/tasks` scored 76 in Performance and 100 in SEO. `/tasks-csr` scored 100 in both. The CSR page has a higher Performance score because it shows a simple loading screen first. Both pages got 100 in SEO because they have the required metadata.
+  CSR is better for private pages with lots of user interaction that do not need to appear in search engines.
