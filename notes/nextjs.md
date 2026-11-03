@@ -24,3 +24,40 @@
 
 ## say how many layouts wrap /tasks/1 and which one stays in place when you go from /tasks to /tasks/1.
   There are two layouts on `/tasks/1`: the root layout (`app/layout.tsx`) and the tasks layout (`app/tasks/layout.tsx`). When I go from `/tasks` to `/tasks/1`, both layouts stay the same. Only the page content changes because both pages are inside the `/tasks` folder.
+
+## what will happen, Deliberate Server/Client Component Error
+  i expected to show that an error because TaskBoard uses React hooks such as useState and useEffect, but it does not have the "use client" directive. Next.js treats it as a Server Component by default.
+
+# Actual Error 
+  You're importing a module that depends on `useEffect` into a React Server Component module. This API is only available in Client Components. 
+  TaskBoard uses React Hooks such as useState and useEffect. However, Next.js treats it as a Server Component by default. React Hooks that require client-side interaction are only available in Client Components.
+
+## Fixing the Client Component Error
+  I added the "use client" directive at the top of TaskBoard.tsx. After this change, the error disappeared and the Tasks page loaded successfully. TaskBoard uses React Hooks and manages interactive elements, so it needs to be a Client Component.
+
+## Did the console.log from TasksPage appear in the browser console or in the terminal? What was typeof window?
+  The console.log message appeared in the terminal, not in the browser console. The value of typeof window was undefined. This shows that TasksPage runs on the server because the window object is only available in the browser.
+
+## Are the task titles in the raw HTML? Now compare with your Lab 4 Vite app: view its source too. Write down the difference and why it exists.
+  I opened the page source using Ctrl + U and searched for the task titles. I found the task titles in the HTML source. In my previous Lab project with Vite, the tasks were loaded in the browser using JavaScript. In Next.js, the tasks are fetched on the server and included in the initial HTML. This makes the content available in the page source before client-side JavaScript runs.
+
+## Table
+| File | Server or Client? | Reason |
+|---|---|---|
+| app/layout.tsx | Server | It does not use React Hooks or browser features. |
+| app/tasks/page.tsx | Server | It fetches tasks on the server using `fetchTasks()`. |
+| TaskBoard.tsx | Client | It uses `useState` to manage tasks and filters, and has `"use client"` written at the top. |
+| TaskList.tsx and TaskCard.tsx | Client | They are imported by `TaskBoard` (and `TaskCard` by `TaskList`), so they are part of the client component tree; `TaskCard` also handles checkbox interactions. |
+| FilterBar.tsx and NewTaskForm.tsx | Client | They are imported by `TaskBoard`; `FilterBar` handles filter interactions, and `NewTaskForm` uses `useState` and handles form interactions. |
+
+**Which files needed "use client" written in them?**
+Only `TaskBoard.tsx`. It is the boundary: it uses `useState` and is imported by the server page.
+
+**Which are client code only because a parent imports them?**
+`TaskList.tsx`, `TaskCard.tsx`, `FilterBar.tsx` and `NewTaskForm.tsx`. They have no `"use client"` line, but everything imported by a Client Component becomes part of the client bundle.
+
+## What appears while the server waits?
+  While the server waits for data, Next.js shows loading.tsx right away. In Lab 4, the loading state was in the browser, so it appeared only after JavaScript loaded. Here, the server sends the loading UI first, and it changes automatically when the data is ready.
+
+##  explain why an error file must be a Client Component.
+  An error file must be a Client Component because it needs to work in the browser. The "Try again" button uses onClick to call reset(). This needs browser interaction, which Server Components cannot do.

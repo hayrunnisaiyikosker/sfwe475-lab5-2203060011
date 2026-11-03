@@ -1,3 +1,7 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { z } from "zod";
+import { getTask } from "@/lib/tasks";
 
 export default async function TaskPage({
   params,
@@ -5,8 +9,16 @@ export default async function TaskPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const parsed = z.coerce.number().int().positive().safeParse(id);
+  if (!parsed.success) notFound();
+  const task = await getTask(parsed.data);
+  if (!task) notFound();
 
-  console.log("id is a", typeof id, "and its value is", id);
-
-  return <h2>Task {id}</h2>;
+  return (
+    <main>
+      <h2>{task.title}</h2>
+      <p>{task.done ? "Done" : "Not done yet"}</p>
+      <Link href="/tasks">Back to all tasks</Link>
+    </main>
+  );
 }
